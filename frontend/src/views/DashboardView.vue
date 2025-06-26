@@ -3,7 +3,7 @@
     <div class="dashboard-header">
       <h1 class="dashboard-title">ダッシュボード</h1>
       <p class="dashboard-subtitle">
-        おかえりなさい、{{ user?.displayName }}さん！
+        おかえりなさい、{{ profile?.displayName }}さん！
       </p>
     </div>
 
@@ -13,18 +13,49 @@
         <div class="card profile-card">
           <h2 class="card-title">プロフィール</h2>
           <div class="profile-info">
-            <div class="profile-item">
-              <strong>表示名:</strong> {{ user?.displayName }}
+            <div class="profile-item" v-if="profile">
+              <strong>表示名:</strong> {{ profile.displayName }}
+            </div>
+            <div class="profile-item" v-else>
+              <strong>表示名:</strong> <span class="no-data">未設定</span>
             </div>
             <div class="profile-item">
               <strong>メールアドレス:</strong> {{ user?.email }}
             </div>
-            <div class="profile-item" v-if="user?.bio">
-              <strong>自己紹介:</strong> {{ user?.bio }}
+            <div class="profile-item" v-if="profile?.bio">
+              <strong>自己紹介:</strong> {{ profile.bio }}
             </div>
             <div class="profile-item">
               <strong>登録日:</strong> {{ formattedCreatedAt }}
             </div>
+            
+            <!-- プロフィール詳細情報 -->
+            <div v-if="profile" class="profile-details">
+              <div class="profile-item" v-if="profile.age">
+                <strong>年齢:</strong> {{ profile.age }}歳
+              </div>
+              <div class="profile-item" v-if="profile.hasUsjAnnualPass">
+                <strong>年間パス:</strong> 
+                <span class="annual-pass">保有中 🎫</span>
+              </div>
+              <div class="profile-item" v-if="profile.favoriteAttractions.length > 0">
+                <strong>好きなアトラクション:</strong>
+                <div class="mini-tags">
+                  <span v-for="attraction in profile.favoriteAttractions.slice(0, 3)" :key="attraction" class="mini-tag">
+                    {{ attraction }}
+                  </span>
+                  <span v-if="profile.favoriteAttractions.length > 3" class="more-count">
+                    +{{ profile.favoriteAttractions.length - 3 }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="profile-actions">
+            <router-link to="/profile" class="btn btn-primary">
+              {{ profile ? 'プロフィール編集' : 'プロフィール作成' }}
+            </router-link>
           </div>
         </div>
 
@@ -32,16 +63,21 @@
         <div class="card quick-actions-card">
           <h2 class="card-title">クイックアクション</h2>
           <div class="action-buttons">
-            <button class="btn btn-primary action-btn" disabled>
+            <router-link to="/profile" class="btn btn-primary action-btn">
+              <span class="action-icon">👤</span>
+              プロフィール設定
+              <small>{{ profile ? '編集' : '作成' }}</small>
+            </router-link>
+            <button class="btn btn-secondary action-btn" disabled>
               <span class="action-icon">🎪</span>
               チャットルーム作成
               <small>(開発中)</small>
             </button>
-            <button class="btn btn-secondary action-btn" disabled>
+            <router-link to="/profile/search" class="btn btn-secondary action-btn">
               <span class="action-icon">🔍</span>
-              ルーム検索
-              <small>(開発中)</small>
-            </button>
+              仲間探し
+              <small>検索</small>
+            </router-link>
             <button class="btn btn-secondary action-btn" disabled>
               <span class="action-icon">👥</span>
               フレンド管理
@@ -94,10 +130,13 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { useProfileStore } from '@/stores/profile'
 
 const authStore = useAuthStore()
+const profileStore = useProfileStore()
 
 const user = computed(() => authStore.user)
+const profile = computed(() => profileStore.profile)
 
 const formattedCreatedAt = computed(() => {
   if (!user.value?.createdAt) return ''
@@ -114,6 +153,9 @@ onMounted(() => {
   if (!user.value) {
     authStore.getCurrentUser()
   }
+  
+  // プロフィール情報を取得
+  profileStore.getMyProfile()
 })
 </script>
 
@@ -169,6 +211,51 @@ onMounted(() => {
   border-bottom: none;
 }
 
+.profile-details {
+  border-top: 2px solid #e3f2fd;
+  padding-top: 1rem;
+  margin-top: 1rem;
+}
+
+.annual-pass {
+  color: #4caf50;
+  font-weight: 600;
+}
+
+.mini-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+}
+
+.mini-tag {
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+}
+
+.more-count {
+  background: #f5f5f5;
+  color: #666;
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+}
+
+.no-data {
+  color: #9ca3af;
+  font-style: italic;
+}
+
+.profile-actions {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f0f0f0;
+}
+
 .action-buttons {
   display: flex;
   flex-direction: column;
@@ -182,6 +269,7 @@ onMounted(() => {
   padding: 1rem;
   text-align: left;
   position: relative;
+  text-decoration: none;
 }
 
 .action-btn:disabled {
@@ -235,22 +323,22 @@ onMounted(() => {
 }
 
 .stat-label {
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   color: #666;
-  margin-top: 0.25rem;
+  margin-top: 0.5rem;
 }
 
 @media (max-width: 768px) {
+  .dashboard {
+    padding: 0 0.5rem;
+  }
+  
   .dashboard-grid {
     grid-template-columns: 1fr;
   }
   
   .stats-grid {
     grid-template-columns: 1fr;
-  }
-  
-  .action-btn {
-    font-size: 0.9rem;
   }
 }
 </style> 

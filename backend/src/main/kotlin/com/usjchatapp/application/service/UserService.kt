@@ -34,9 +34,6 @@ class UserService(
         val user = User(
             email = request.email,
             password = passwordEncoder.encode(request.password),
-            displayName = request.displayName,
-            profileImage = request.profileImage,
-            bio = request.bio,
             role = UserRole.USER,
             createdAt = LocalDateTime.now(),
             updatedAt = LocalDateTime.now()
@@ -85,9 +82,6 @@ class UserService(
         return UserDto(
             id = user.id,
             email = user.email,
-            displayName = user.displayName,
-            profileImage = user.profileImage,
-            bio = user.bio,
             createdAt = user.createdAt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
         )
     }

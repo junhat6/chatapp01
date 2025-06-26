@@ -12,6 +12,15 @@
           <router-link to="/register" class="nav-link" v-if="!isAuthenticated">
             新規登録
           </router-link>
+          <router-link to="/dashboard" class="nav-link" v-if="isAuthenticated">
+            ダッシュボード
+          </router-link>
+          <router-link to="/profile" class="nav-link" v-if="isAuthenticated">
+            プロフィール
+          </router-link>
+          <router-link to="/profile/search" class="nav-link" v-if="isAuthenticated">
+            仲間探し
+          </router-link>
           <button @click="logout" class="nav-link logout-btn" v-if="isAuthenticated">
             ログアウト
           </button>
@@ -67,6 +76,7 @@ const logout = () => {
 .nav-links {
   display: flex;
   gap: 1rem;
+  align-items: center;
 }
 
 .nav-link {
@@ -81,6 +91,11 @@ const logout = () => {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
+.nav-link.router-link-active {
+  background-color: rgba(255, 255, 255, 0.2);
+  font-weight: 600;
+}
+
 .logout-btn {
   background: none;
   border: none;
@@ -92,5 +107,17 @@ const logout = () => {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem 1rem;
+}
+
+@media (max-width: 768px) {
+  .nav-container {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .nav-links {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
 }
 </style> 
