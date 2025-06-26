@@ -4,7 +4,8 @@ import type {
     CreateUserProfileRequest, 
     UpdateUserProfileRequest, 
     UserProfileSearchRequest,
-    ApiResponse 
+    ApiResponse,
+    ProfileCompletionStatus
 } from '@/types'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
@@ -33,6 +34,10 @@ export const profileApi = {
     // 自分のプロフィール取得
     getMyProfile: () => 
         api.get<ApiResponse<UserProfile | null>>('/me'),
+
+    // プロフィール完了ステータス取得
+    getCompletionStatus: () => 
+        api.get<ApiResponse<ProfileCompletionStatus>>('/completion-status'),
 
     // 他人のプロフィール取得
     getUserProfile: (userId: number) => 

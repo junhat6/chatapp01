@@ -18,9 +18,15 @@
           <router-link to="/profile" class="nav-link" v-if="isAuthenticated">
             プロフィール
           </router-link>
-          <router-link to="/profile/search" class="nav-link" v-if="isAuthenticated">
+          <a 
+            @click="navigateToSearch" 
+            class="nav-link" 
+            :class="{ 'restricted': !isProfileComplete }"
+            v-if="isAuthenticated"
+          >
             仲間探し
-          </router-link>
+            <span v-if="!isProfileComplete" class="lock-indicator">🔒</span>
+          </a>
           <button @click="logout" class="nav-link logout-btn" v-if="isAuthenticated">
             ログアウト
           </button>
@@ -38,14 +44,33 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from './stores/auth'
+import { useProfileStore } from './stores/profile'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const profileStore = useProfileStore()
+
 const isAuthenticated = computed(() => authStore.isAuthenticated)
+const isProfileComplete = computed(() => profileStore.isProfileComplete)
 
 const logout = () => {
   authStore.logout()
   router.push('/')
+}
+
+const navigateToSearch = () => {
+  if (!isProfileComplete.value) {
+    router.push({ 
+      name: 'profile', 
+      query: { 
+        incomplete: 'true',
+        missing: profileStore.missingFields.join(','),
+        from: 'profile-search'
+      }
+    })
+  } else {
+    router.push('/profile/search')
+  }
 }
 </script>
 
@@ -99,14 +124,30 @@ const logout = () => {
 .logout-btn {
   background: none;
   border: none;
+  font: inherit;
+  color: inherit;
   cursor: pointer;
-  font-size: inherit;
+}
+
+.nav-link.restricted {
+  opacity: 0.6;
+  cursor: pointer;
+}
+
+.nav-link.restricted:hover {
+  opacity: 0.8;
+}
+
+.lock-indicator {
+  margin-left: 0.25rem;
+  font-size: 0.8rem;
 }
 
 .main-content {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem 1rem;
+  min-height: calc(100vh - 80px);
 }
 
 @media (max-width: 768px) {

@@ -14,6 +14,33 @@
               削除
             </button>
           </div>
+          
+          <!-- プロフィール未完了の警告メッセージ -->
+          <div v-if="isIncompleteAccess" class="incomplete-warning">
+            <div class="warning-content">
+              <h3>⚠️ プロフィール設定が未完了です</h3>
+              <p>チャット機能や仲間探し機能を利用するには、プロフィールの設定を完了してください。</p>
+              <div v-if="missingFieldsFromQuery.length > 0" class="missing-fields">
+                <p><strong>必須項目：</strong></p>
+                <ul>
+                  <li v-for="field in missingFieldsFromQuery" :key="field">{{ field }}</li>
+                </ul>
+              </div>
+              <div v-if="fromRoute" class="original-destination">
+                <p>設定完了後、「{{ getRouteDisplayName(fromRoute) }}」ページに戻ることができます。</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- プロフィール完了ステータス表示 -->
+          <div v-else-if="completionStatus" class="completion-status">
+            <div v-if="isProfileComplete" class="status-complete">
+              ✅ プロフィール設定完了
+            </div>
+            <div v-else class="status-incomplete">
+              ⚠️ プロフィール未完了 - 必須項目: {{ missingFields.join(', ') }}
+            </div>
+          </div>
         </div>
 
         <!-- エラー表示 -->
@@ -264,14 +291,38 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useProfileStore } from '@/stores/profile'
 import type { CreateUserProfileRequest, UpdateUserProfileRequest } from '@/types'
 
+const router = useRouter()
+const route = useRoute()
 const profileStore = useProfileStore()
 
 const profile = computed(() => profileStore.profile)
 const loading = computed(() => profileStore.loading)
 const error = computed(() => profileStore.error)
+const completionStatus = computed(() => profileStore.completionStatus)
+const isProfileComplete = computed(() => profileStore.isProfileComplete)
+const missingFields = computed(() => profileStore.missingFields)
+
+// URL クエリパラメータから情報を取得
+const isIncompleteAccess = computed(() => route.query.incomplete === 'true')
+const fromRoute = computed(() => route.query.from as string)
+const missingFieldsFromQuery = computed(() => {
+  const missing = route.query.missing as string
+  return missing ? missing.split(',') : []
+})
+
+// ルート名から表示名を取得する関数
+const getRouteDisplayName = (routeName: string): string => {
+  const routeNames: Record<string, string> = {
+    'profile-search': '仲間探し',
+    'dashboard': 'ダッシュボード',
+    'chat': 'チャット'
+  }
+  return routeNames[routeName] || routeName
+}
 
 const isEditing = ref(false)
 const newAttraction = ref('')
@@ -405,6 +456,11 @@ const handleSubmit = async () => {
 
   if (success) {
     isEditing.value = false
+    
+    // プロフィール完了後、元のページがあればリダイレクト
+    if (isIncompleteAccess.value && fromRoute.value) {
+      router.push({ name: fromRoute.value })
+    }
   }
 }
 
@@ -708,5 +764,71 @@ onMounted(() => {
   .form-actions {
     flex-direction: column;
   }
+}
+
+.main-content {
+  min-height: calc(100vh - 80px);
+}
+
+.incomplete-warning {
+  background: linear-gradient(135deg, #ffeb3b 0%, #ff9800 100%);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 6px rgba(255, 152, 0, 0.2);
+}
+
+.warning-content h3 {
+  margin: 0 0 1rem 0;
+  color: #e65100;
+  font-size: 1.2rem;
+}
+
+.warning-content p {
+  margin: 0.5rem 0;
+  color: #e65100;
+  font-weight: 500;
+}
+
+.missing-fields {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+}
+
+.missing-fields ul {
+  margin: 0.5rem 0 0 1rem;
+  color: #d84315;
+}
+
+.original-destination {
+  margin-top: 1rem;
+  padding: 0.8rem;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  border-left: 4px solid #e65100;
+}
+
+.completion-status {
+  margin-bottom: 1.5rem;
+}
+
+.status-complete {
+  background: linear-gradient(135deg, #4caf50 0%, #8bc34a 100%);
+  color: white;
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.status-incomplete {
+  background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+  color: white;
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 500;
 }
 </style> 

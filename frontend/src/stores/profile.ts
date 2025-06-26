@@ -1,17 +1,40 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { profileApi } from '@/services/profileApi'
 import type { 
     UserProfile, 
     CreateUserProfileRequest, 
     UpdateUserProfileRequest, 
-    UserProfileSearchRequest 
+    UserProfileSearchRequest,
+    ProfileCompletionStatus
 } from '@/types'
 
 export const useProfileStore = defineStore('profile', () => {
     const profile = ref<UserProfile | null>(null)
+    const completionStatus = ref<ProfileCompletionStatus | null>(null)
     const loading = ref(false)
     const error = ref<string | null>(null)
+
+    // プロフィール完了チェック
+    const isProfileComplete = computed(() => completionStatus.value?.isComplete ?? false)
+    const hasProfile = computed(() => completionStatus.value?.hasProfile ?? false)
+    const missingFields = computed(() => completionStatus.value?.missingFields ?? [])
+
+    // プロフィール完了ステータス取得
+    const getCompletionStatus = async (): Promise<void> => {
+        try {
+            const response = await profileApi.getCompletionStatus()
+            
+            if (response.data.success) {
+                completionStatus.value = response.data.data || null
+            } else {
+                error.value = response.data.message
+            }
+        } catch (err: any) {
+            error.value = err.response?.data?.message || 'ステータス取得に失敗しました'
+            completionStatus.value = null
+        }
+    }
 
     // プロフィール作成
     const createProfile = async (data: CreateUserProfileRequest): Promise<boolean> => {
@@ -23,6 +46,8 @@ export const useProfileStore = defineStore('profile', () => {
             
             if (response.data.success && response.data.data) {
                 profile.value = response.data.data
+                // 作成後にステータスを更新
+                await getCompletionStatus()
                 return true
             } else {
                 error.value = response.data.message
@@ -46,6 +71,8 @@ export const useProfileStore = defineStore('profile', () => {
             
             if (response.data.success) {
                 profile.value = response.data.data || null
+                // プロフィール取得後にステータスも更新
+                await getCompletionStatus()
             } else {
                 error.value = response.data.message
             }
@@ -67,6 +94,8 @@ export const useProfileStore = defineStore('profile', () => {
             
             if (response.data.success && response.data.data) {
                 profile.value = response.data.data
+                // 更新後にステータスを更新
+                await getCompletionStatus()
                 return true
             } else {
                 error.value = response.data.message
@@ -155,8 +184,13 @@ export const useProfileStore = defineStore('profile', () => {
 
     return {
         profile,
+        completionStatus,
         loading,
         error,
+        isProfileComplete,
+        hasProfile,
+        missingFields,
+        getCompletionStatus,
         createProfile,
         getMyProfile,
         updateProfile,
