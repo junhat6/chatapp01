@@ -133,6 +133,57 @@ class UserProfileService(
             .map { mapToUserProfileDto(it) }
     }
 
+    /**
+     * プロフィール完了ステータスをチェック
+     * 必須項目: displayName, age, gender, locationPrefecture
+     */
+    fun isProfileComplete(userId: Long): Boolean {
+        val profile = userProfileRepository.findById(userId).orElse(null)
+        if (profile == null) {
+            return false
+        }
+        
+        return profile.displayName.isNotBlank() &&
+               profile.age != null &&
+               profile.gender != null &&
+               profile.locationPrefecture != null
+    }
+
+    /**
+     * プロフィール完了ステータス詳細を取得
+     */
+    fun getProfileCompletionStatus(userId: Long): ProfileCompletionStatusDto {
+        val profile = userProfileRepository.findById(userId).orElse(null)
+        if (profile == null) {
+            return ProfileCompletionStatusDto(
+                isComplete = false,
+                hasProfile = false,
+                missingFields = listOf("プロフィール未作成")
+            )
+        }
+        
+        val missingFields = mutableListOf<String>()
+        
+        if (profile.displayName.isBlank()) {
+            missingFields.add("表示名")
+        }
+        if (profile.age == null) {
+            missingFields.add("年齢")
+        }
+        if (profile.gender == null) {
+            missingFields.add("性別")
+        }
+        if (profile.locationPrefecture == null) {
+            missingFields.add("都道府県")
+        }
+        
+        return ProfileCompletionStatusDto(
+            isComplete = missingFields.isEmpty(),
+            hasProfile = true,
+            missingFields = missingFields
+        )
+    }
+
     private fun mapToUserProfileDto(profile: UserProfile): UserProfileDto {
         return UserProfileDto(
             userId = profile.userId,

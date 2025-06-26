@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useProfileStore } from '@/stores/profile'
 import HomeView from '@/views/HomeView.vue'
 import LoginView from '@/views/LoginView.vue'
 import RegisterView from '@/views/RegisterView.vue'
@@ -43,21 +44,56 @@ const router = createRouter({
             path: '/profile/search',
             name: 'profile-search',
             component: ProfileSearchView,
-            meta: { requiresAuth: true }
+            meta: { 
+                requiresAuth: true,
+                requiresCompleteProfile: true 
+            }
         }
     ]
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
     const authStore = useAuthStore()
+    const profileStore = useProfileStore()
 
+    // 認証チェック
     if (to.meta.requiresAuth && !authStore.isAuthenticated) {
         next('/login')
-    } else if (to.meta.requiresGuest && authStore.isAuthenticated) {
+        return
+    } 
+    
+    if (to.meta.requiresGuest && authStore.isAuthenticated) {
         next('/dashboard')
-    } else {
-        next()
+        return
     }
+
+    // プロフィール完了チェック
+    if (to.meta.requiresCompleteProfile && authStore.isAuthenticated) {
+        try {
+            // プロフィール完了ステータスを取得
+            await profileStore.getCompletionStatus()
+            
+            if (!profileStore.isProfileComplete) {
+                // プロフィールが未完了の場合、プロフィール設定ページにリダイレクト
+                next({ 
+                    name: 'profile', 
+                    query: { 
+                        incomplete: 'true',
+                        missing: profileStore.missingFields.join(','),
+                        from: to.name as string
+                    }
+                })
+                return
+            }
+        } catch (error) {
+            console.error('プロフィールステータス取得エラー:', error)
+            // エラーの場合もプロフィールページにリダイレクト
+            next({ name: 'profile', query: { incomplete: 'true' } })
+            return
+        }
+    }
+
+    next()
 })
 
 export default router 

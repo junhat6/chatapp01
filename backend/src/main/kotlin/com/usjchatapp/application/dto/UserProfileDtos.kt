@@ -79,4 +79,10 @@ data class UserProfileSearchRequest(
     val favoriteAttraction: String? = null,
     val locationPrefecture: String? = null,
     val displayName: String? = null
+)
+
+data class ProfileCompletionStatusDto(
+    val isComplete: Boolean,
+    val hasProfile: Boolean,
+    val missingFields: List<String>
 ) 

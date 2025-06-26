@@ -3,6 +3,7 @@ package com.usjchatapp.presentation.controller
 import com.usjchatapp.application.dto.*
 import com.usjchatapp.application.service.UserProfileService
 import com.usjchatapp.domain.entity.User
+import com.usjchatapp.infrastructure.annotation.RequireCompleteProfile
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -72,7 +73,32 @@ class UserProfileController(
         }
     }
 
+    @GetMapping("/completion-status")
+    fun getProfileCompletionStatus(
+        @AuthenticationPrincipal user: User
+    ): ResponseEntity<ApiResponse<ProfileCompletionStatusDto>> {
+        return try {
+            val status = userProfileService.getProfileCompletionStatus(user.id)
+            ResponseEntity.ok(
+                ApiResponse(
+                    success = true,
+                    data = status,
+                    message = "プロフィール完了ステータスを取得しました"
+                )
+            )
+        } catch (e: Exception) {
+            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                ApiResponse(
+                    success = false,
+                    message = "サーバーエラーが発生しました",
+                    errors = listOf(e.message ?: "不明なエラー")
+                )
+            )
+        }
+    }
+
     @GetMapping("/{userId}")
+    @RequireCompleteProfile
     fun getUserProfile(
         @PathVariable userId: Long
     ): ResponseEntity<ApiResponse<UserProfileDto?>> {
@@ -162,6 +188,7 @@ class UserProfileController(
     }
 
     @GetMapping("/search")
+    @RequireCompleteProfile
     fun searchProfiles(
         @RequestParam(required = false) minAge: Int?,
         @RequestParam(required = false) maxAge: Int?,

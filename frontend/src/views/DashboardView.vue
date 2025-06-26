@@ -12,6 +12,29 @@
         <!-- ユーザー情報カード -->
         <div class="card profile-card">
           <h2 class="card-title">プロフィール</h2>
+          
+          <!-- プロフィール完了ステータス -->
+          <div class="profile-status">
+            <div v-if="isProfileComplete" class="status-complete">
+              ✅ プロフィール設定完了
+            </div>
+            <div v-else-if="hasProfile" class="status-incomplete">
+              ⚠️ プロフィール未完了
+              <div class="missing-info">
+                必須項目: {{ missingFields.join(', ') }}
+              </div>
+              <button @click="navigateToProfile" class="complete-button">
+                プロフィールを完成させる
+              </button>
+            </div>
+            <div v-else class="status-no-profile">
+              ❌ プロフィール未作成
+              <button @click="navigateToProfile" class="create-button">
+                プロフィールを作成する
+              </button>
+            </div>
+          </div>
+          
           <div class="profile-info">
             <div class="profile-item" v-if="profile">
               <strong>表示名:</strong> {{ profile.displayName }}
@@ -73,11 +96,16 @@
               チャットルーム作成
               <small>(開発中)</small>
             </button>
-            <router-link to="/profile/search" class="btn btn-secondary action-btn">
+            <div 
+              @click="navigateToSearch" 
+              class="btn btn-secondary action-btn"
+              :class="{ 'disabled': !isProfileComplete }"
+            >
               <span class="action-icon">🔍</span>
               仲間探し
-              <small>検索</small>
-            </router-link>
+              <small v-if="isProfileComplete">検索</small>
+              <small v-else class="restriction-text">プロフィール完了が必要</small>
+            </div>
             <button class="btn btn-secondary action-btn" disabled>
               <span class="action-icon">👥</span>
               フレンド管理
@@ -129,24 +157,43 @@
 
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useProfileStore } from '@/stores/profile'
 
+const router = useRouter()
 const authStore = useAuthStore()
 const profileStore = useProfileStore()
 
 const user = computed(() => authStore.user)
 const profile = computed(() => profileStore.profile)
+const isProfileComplete = computed(() => profileStore.isProfileComplete)
+const hasProfile = computed(() => profileStore.hasProfile)
+const missingFields = computed(() => profileStore.missingFields)
 
 const formattedCreatedAt = computed(() => {
   if (!user.value?.createdAt) return ''
-  const date = new Date(user.value.createdAt)
-  return date.toLocaleDateString('ja-JP', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  })
+  return new Date(user.value.createdAt).toLocaleDateString('ja-JP')
 })
+
+const navigateToProfile = () => {
+  router.push('/profile')
+}
+
+const navigateToSearch = () => {
+  if (!isProfileComplete.value) {
+    router.push({ 
+      name: 'profile', 
+      query: { 
+        incomplete: 'true',
+        missing: missingFields.value.join(','),
+        from: 'profile-search'
+      }
+    })
+  } else {
+    router.push('/profile/search')
+  }
+}
 
 onMounted(() => {
   // ユーザー情報を最新に更新
@@ -246,7 +293,7 @@ onMounted(() => {
 }
 
 .no-data {
-  color: #9ca3af;
+  color: #999;
   font-style: italic;
 }
 
@@ -340,5 +387,71 @@ onMounted(() => {
   .stats-grid {
     grid-template-columns: 1fr;
   }
+}
+
+.profile-status {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.status-complete {
+  background: linear-gradient(135deg, #4caf50 0%, #8bc34a 100%);
+  color: white;
+  text-align: center;
+  font-weight: 500;
+}
+
+.status-incomplete {
+  background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+  color: white;
+  text-align: center;
+  font-weight: 500;
+}
+
+.status-no-profile {
+  background: linear-gradient(135deg, #f44336 0%, #e57373 100%);
+  color: white;
+  text-align: center;
+  font-weight: 500;
+}
+
+.missing-info {
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.complete-button, .create-button {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid white;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  margin-top: 0.5rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.complete-button:hover, .create-button:hover {
+  background: white;
+  color: #f57c00;
+}
+
+.action-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  position: relative;
+}
+
+.action-btn.disabled:hover {
+  transform: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.restriction-text {
+  color: #ff5722;
+  font-size: 0.8rem;
 }
 </style> 
