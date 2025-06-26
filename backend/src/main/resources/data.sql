@@ -1,14 +1,10 @@
 -- テストユーザーデータ
 -- パスワード: password123 のBCryptハッシュ値
 -- ON CONFLICTを使用して安全に挿入（重複時はスキップ）
--- テストユーザーを追加
--- password123 = $2a$10$TGiQfIiMCx2OcJi6nM23jupcWlDSGCAvW6vOFwpCwZJU/9jjkTF5u
+-- 認証用のユーザーデータ
 INSERT INTO users (
         email,
         password,
-        display_name,
-        profile_image,
-        bio,
         role,
         created_at,
         updated_at,
@@ -17,9 +13,6 @@ INSERT INTO users (
 VALUES (
         'admin@example.com',
         '$2a$10$TGiQfIiMCx2OcJi6nM23jupcWlDSGCAvW6vOFwpCwZJU/9jjkTF5u',
-        'システム管理者',
-        null,
-        'システム管理者です。お困りの際はお気軽にお声かけください。',
         'ADMIN',
         NOW(),
         NOW(),
@@ -28,9 +21,6 @@ VALUES (
     (
         'alice@example.com',
         '$2a$10$TGiQfIiMCx2OcJi6nM23jupcWlDSGCAvW6vOFwpCwZJU/9jjkTF5u',
-        'アリス',
-        null,
-        'チャットアプリを愛用しています！よろしくお願いします。',
         'USER',
         NOW(),
         NOW(),
@@ -39,9 +29,6 @@ VALUES (
     (
         'bob@example.com',
         '$2a$10$TGiQfIiMCx2OcJi6nM23jupcWlDSGCAvW6vOFwpCwZJU/9jjkTF5u',
-        'ボブ',
-        null,
-        'プログラミングとゲームが趣味です。',
         'USER',
         NOW(),
         NOW(),
@@ -50,9 +37,6 @@ VALUES (
     (
         'charlie@example.com',
         '$2a$10$TGiQfIiMCx2OcJi6nM23jupcWlDSGCAvW6vOFwpCwZJU/9jjkTF5u',
-        'チャーリー',
-        null,
-        '読書と映画鑑賞が好きです。おすすめがあれば教えてください！',
         'USER',
         NOW(),
         NOW(),
@@ -61,44 +45,72 @@ VALUES (
     (
         'diana@example.com',
         '$2a$10$TGiQfIiMCx2OcJi6nM23jupcWlDSGCAvW6vOFwpCwZJU/9jjkTF5u',
-        'ダイアナ',
-        null,
-        '旅行と写真撮影が趣味です。',
-        'USER',
-        NOW(),
-        NOW(),
-        true
-    ),
-    (
-        'eve@example.com',
-        '$2a$10$TGiQfIiMCx2OcJi6nM23jupcWlDSGCAvW6vOFwpCwZJU/9jjkTF5u',
-        'イブ',
-        null,
-        '料理とお菓子作りが大好きです♪',
-        'USER',
-        NOW(),
-        NOW(),
-        true
-    ),
-    (
-        'frank@example.com',
-        '$2a$10$TGiQfIiMCx2OcJi6nM23jupcWlDSGCAvW6vOFwpCwZJU/9jjkTF5u',
-        'フランク',
-        null,
-        'スポーツ観戦とアウトドアが好きです。',
-        'USER',
-        NOW(),
-        NOW(),
-        true
-    ),
-    (
-        'grace@example.com',
-        '$2a$10$TGiQfIiMCx2OcJi6nM23jupcWlDSGCAvW6vOFwpCwZJU/9jjkTF5u',
-        'グレース',
-        null,
-        '音楽と絵画に興味があります。',
         'USER',
         NOW(),
         NOW(),
         true
     ) ON CONFLICT (email) DO NOTHING;
+-- 表示・個性情報のプロフィールデータ
+INSERT INTO user_profiles (
+        user_id,
+        display_name,
+        profile_image,
+        bio,
+        age,
+        gender,
+        has_usj_annual_pass,
+        location_prefecture,
+        created_at,
+        updated_at
+    )
+SELECT u.id,
+    CASE
+        WHEN u.email = 'admin@example.com' THEN 'システム管理者'
+        WHEN u.email = 'alice@example.com' THEN 'アリス'
+        WHEN u.email = 'bob@example.com' THEN 'ボブ'
+        WHEN u.email = 'charlie@example.com' THEN 'チャーリー'
+        WHEN u.email = 'diana@example.com' THEN 'ダイアナ'
+    END as display_name,
+    null as profile_image,
+    CASE
+        WHEN u.email = 'admin@example.com' THEN 'システム管理者です。お困りの際はお気軽にお声かけください。'
+        WHEN u.email = 'alice@example.com' THEN 'USJが大好きです！年間パス持ってます♪'
+        WHEN u.email = 'bob@example.com' THEN 'プログラミングとUSJのアトラクションが趣味です。'
+        WHEN u.email = 'charlie@example.com' THEN '読書と映画鑑賞、そしてUSJが好きです。'
+        WHEN u.email = 'diana@example.com' THEN '旅行と写真撮影が趣味です。USJで写真撮るのが好き！'
+    END as bio,
+    CASE
+        WHEN u.email = 'alice@example.com' THEN 25
+        WHEN u.email = 'bob@example.com' THEN 28
+        WHEN u.email = 'charlie@example.com' THEN 22
+        WHEN u.email = 'diana@example.com' THEN 30
+    END as age,
+    CASE
+        WHEN u.email = 'alice@example.com' THEN '女性'
+        WHEN u.email = 'bob@example.com' THEN '男性'
+        WHEN u.email = 'charlie@example.com' THEN '男性'
+        WHEN u.email = 'diana@example.com' THEN '女性'
+    END as gender,
+    CASE
+        WHEN u.email = 'alice@example.com' THEN true
+        WHEN u.email = 'bob@example.com' THEN false
+        WHEN u.email = 'charlie@example.com' THEN true
+        WHEN u.email = 'diana@example.com' THEN true
+        ELSE false
+    END as has_usj_annual_pass,
+    CASE
+        WHEN u.email = 'alice@example.com' THEN '大阪府'
+        WHEN u.email = 'bob@example.com' THEN '東京都'
+        WHEN u.email = 'charlie@example.com' THEN '兵庫県'
+        WHEN u.email = 'diana@example.com' THEN '京都府'
+    END as location_prefecture,
+    NOW() as created_at,
+    NOW() as updated_at
+FROM users u
+WHERE u.email IN (
+        'admin@example.com',
+        'alice@example.com',
+        'bob@example.com',
+        'charlie@example.com',
+        'diana@example.com'
+    ) ON CONFLICT (user_id) DO NOTHING;

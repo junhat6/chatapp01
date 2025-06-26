@@ -19,15 +19,6 @@ data class User(
     @Column(nullable = false)
     private val password: String = "",
     
-    @Column(nullable = false)
-    val displayName: String = "",
-    
-    @Column
-    val profileImage: String? = null,
-    
-    @Column
-    val bio: String? = null,
-    
     @Enumerated(EnumType.STRING)
     val role: UserRole = UserRole.USER,
     

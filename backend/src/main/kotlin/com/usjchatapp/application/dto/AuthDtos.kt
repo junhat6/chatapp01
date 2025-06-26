@@ -11,14 +11,7 @@ data class SignUpRequest(
     
     @field:NotBlank(message = "パスワードは必須です")
     @field:Size(min = 6, max = 20, message = "パスワードは6文字以上20文字以下で入力してください")
-    val password: String,
-    
-    @field:NotBlank(message = "表示名は必須です")
-    @field:Size(min = 1, max = 50, message = "表示名は1文字以上50文字以下で入力してください")
-    val displayName: String,
-    
-    val profileImage: String? = null,
-    val bio: String? = null
+    val password: String
 )
 
 data class SignInRequest(
@@ -38,9 +31,6 @@ data class AuthResponse(
 data class UserDto(
     val id: Long,
     val email: String,
-    val displayName: String,
-    val profileImage: String?,
-    val bio: String?,
     val createdAt: String
 )
 
