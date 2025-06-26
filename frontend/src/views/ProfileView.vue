@@ -195,22 +195,22 @@
             <label for="favoriteAttractions" class="form-label">好きなアトラクション</label>
             <div class="attraction-input-section">
               <div class="input-with-button">
-                <input
-                  v-model="newAttraction"
-                  type="text"
-                  placeholder="アトラクション名を入力"
+                <select
+                  v-model="selectedAttraction"
                   class="form-input"
-                  @keyup.enter="addAttraction"
+                  @change="addAttractionFromSelect"
                   :disabled="loading"
-                />
-                <button
-                  type="button"
-                  @click="addAttraction"
-                  class="btn btn-secondary btn-sm"
-                  :disabled="loading || !newAttraction.trim()"
                 >
-                  追加
-                </button>
+                  <option value="">アトラクションを選択してください</option>
+                  <option 
+                    v-for="attraction in availableAttractions" 
+                    :key="attraction" 
+                    :value="attraction"
+                    :disabled="form.favoriteAttractions.includes(attraction)"
+                  >
+                    {{ attraction }}
+                  </option>
+                </select>
               </div>
               <div class="tags">
                 <span v-for="attraction in form.favoriteAttractions" :key="attraction" class="tag attraction-tag">
@@ -294,6 +294,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useProfileStore } from '@/stores/profile'
 import type { CreateUserProfileRequest, UpdateUserProfileRequest } from '@/types'
+import { profileApi } from '@/services/profileApi'
 
 const router = useRouter()
 const route = useRoute()
@@ -325,8 +326,9 @@ const getRouteDisplayName = (routeName: string): string => {
 }
 
 const isEditing = ref(false)
-const newAttraction = ref('')
+const selectedAttraction = ref('')
 const newHobby = ref('')
+const availableAttractions = ref<string[]>([])
 
 // フォームデータ
 const form = ref<CreateUserProfileRequest>({
@@ -352,12 +354,24 @@ const prefectures = [
   '熊本県', '大分県', '宮崎県', '鹿児島県', '沖縄県'
 ]
 
-// アトラクション追加
-const addAttraction = () => {
-  const attraction = newAttraction.value.trim()
+// アトラクション一覧を取得
+const fetchAvailableAttractions = async () => {
+  try {
+    const response = await profileApi.getAvailableAttractions()
+    if (response.data.success) {
+      availableAttractions.value = response.data.data || []
+    }
+  } catch (error) {
+    console.error('アトラクション一覧の取得に失敗しました:', error)
+  }
+}
+
+// セレクトボックスからアトラクション追加
+const addAttractionFromSelect = () => {
+  const attraction = selectedAttraction.value
   if (attraction && !form.value.favoriteAttractions.includes(attraction)) {
     form.value.favoriteAttractions.push(attraction)
-    newAttraction.value = ''
+    selectedAttraction.value = ''
   }
 }
 
@@ -474,6 +488,7 @@ const deleteProfileConfirm = () => {
 // 初期化
 onMounted(() => {
   profileStore.getMyProfile()
+  fetchAvailableAttractions()
 })
 </script>
 

@@ -87,14 +87,17 @@
 
           <div class="form-group">
             <label for="favoriteAttraction" class="form-label">好きなアトラクション</label>
-            <input
+            <select
               id="favoriteAttraction"
               v-model="searchForm.favoriteAttraction"
-              type="text"
               class="form-input"
-              placeholder="アトラクション名で検索"
               :disabled="loading"
-            />
+            >
+              <option value="">すべて</option>
+              <option v-for="attraction in availableAttractions" :key="attraction" :value="attraction">
+                {{ attraction }}
+              </option>
+            </select>
           </div>
 
           <div class="form-group">
@@ -207,9 +210,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useProfileStore } from '@/stores/profile'
 import type { UserProfile, UserProfileSearchRequest } from '@/types'
+import { profileApi } from '@/services/profileApi'
 
 const profileStore = useProfileStore()
 
@@ -218,6 +222,7 @@ const error = computed(() => profileStore.error)
 
 const searchResults = ref<UserProfile[]>([])
 const hasSearched = ref(false)
+const availableAttractions = ref<string[]>([])
 
 // 検索フォーム
 const searchForm = ref<UserProfileSearchRequest>({
@@ -239,6 +244,18 @@ const prefectures = [
   '徳島県', '香川県', '愛媛県', '高知県', '福岡県', '佐賀県', '長崎県',
   '熊本県', '大分県', '宮崎県', '鹿児島県', '沖縄県'
 ]
+
+// アトラクション一覧を取得
+const fetchAvailableAttractions = async () => {
+  try {
+    const response = await profileApi.getAvailableAttractions()
+    if (response.data.success) {
+      availableAttractions.value = response.data.data || []
+    }
+  } catch (error) {
+    console.error('アトラクション一覧の取得に失敗しました:', error)
+  }
+}
 
 // 検索実行
 const handleSearch = async () => {
@@ -274,6 +291,11 @@ const clearSearch = () => {
   searchResults.value = []
   hasSearched.value = false
 }
+
+// 初期化
+onMounted(() => {
+  fetchAvailableAttractions()
+})
 </script>
 
 <style scoped>

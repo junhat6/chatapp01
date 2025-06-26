@@ -62,4 +62,8 @@ export const profileApi = {
     // 特定アトラクション好きな人一覧
     getUsersByFavoriteAttraction: (attraction: string) => 
         api.get<ApiResponse<UserProfile[]>>(`/attraction/${attraction}`),
+
+    // アトラクション一覧取得
+    getAvailableAttractions: () => 
+        api.get<ApiResponse<string[]>>('/attractions'),
 } 

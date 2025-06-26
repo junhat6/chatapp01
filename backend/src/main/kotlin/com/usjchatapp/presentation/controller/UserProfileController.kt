@@ -3,6 +3,7 @@ package com.usjchatapp.presentation.controller
 import com.usjchatapp.application.dto.*
 import com.usjchatapp.application.service.UserProfileService
 import com.usjchatapp.domain.entity.User
+import com.usjchatapp.domain.enums.USJAttraction
 import com.usjchatapp.infrastructure.annotation.RequireCompleteProfile
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -258,6 +259,28 @@ class UserProfileController(
                     success = true,
                     data = profiles,
                     message = "${profiles.size}人のユーザーが「$attraction」を好きなアトラクションに設定しています"
+                )
+            )
+        } catch (e: Exception) {
+            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                ApiResponse(
+                    success = false,
+                    message = "サーバーエラーが発生しました",
+                    errors = listOf(e.message ?: "不明なエラー")
+                )
+            )
+        }
+    }
+
+    @GetMapping("/attractions")
+    fun getAvailableAttractions(): ResponseEntity<ApiResponse<List<String>>> {
+        return try {
+            val attractions = USJAttraction.getAllDisplayNames()
+            ResponseEntity.ok(
+                ApiResponse(
+                    success = true,
+                    data = attractions,
+                    message = "${attractions.size}個のアトラクションが利用可能です"
                 )
             )
         } catch (e: Exception) {
