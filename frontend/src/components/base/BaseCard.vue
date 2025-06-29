@@ -41,10 +41,10 @@ const cardClasses = computed(() => [
 
 <style scoped>
 .card {
-  background: white;
-  border-radius: 8px;
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  transition: all 0.2s;
+  transition: var(--transition-base);
 }
 
 .card-padding-none {
@@ -52,59 +52,59 @@ const cardClasses = computed(() => [
 }
 
 .card-padding-sm {
-  padding: 1rem;
+  padding: var(--space-4);
 }
 
 .card-padding-md {
-  padding: 2rem;
+  padding: var(--space-8);
 }
 
 .card-padding-lg {
-  padding: 3rem;
+  padding: var(--space-12);
 }
 
 .card-shadow-none {
   box-shadow: none;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-border-default);
 }
 
 .card-shadow-sm {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
 }
 
 .card-shadow-md {
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
 }
 
 .card-shadow-lg {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-lg);
 }
 
 .card-hover:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-lg);
 }
 
 .card-header {
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #f0f0f0;
-  margin-bottom: 1rem;
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-border-muted);
+  margin-bottom: var(--space-4);
 }
 
 .card-footer {
-  padding-top: 1rem;
-  border-top: 1px solid #f0f0f0;
-  margin-top: 1rem;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-muted);
+  margin-top: var(--space-4);
 }
 
 /* パディングがnoneの場合のヘッダー・フッター調整 */
 .card-padding-none .card-header,
 .card-padding-none .card-footer {
-  padding-left: 1rem;
-  padding-right: 1rem;
+  padding-left: var(--space-4);
+  padding-right: var(--space-4);
 }
 
 .card-padding-none .card-content {
-  padding: 0 1rem;
+  padding: 0 var(--space-4);
 }
 </style> 
