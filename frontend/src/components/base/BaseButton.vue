@@ -49,14 +49,14 @@ const buttonClasses = computed(() => [
 <style scoped>
 .btn {
   display: inline-block;
-  padding: 0.75rem 1.5rem;
+  padding: var(--space-3) var(--space-6);
   border: none;
-  border-radius: 4px;
+  border-radius: var(--radius-base);
   cursor: pointer;
   text-decoration: none;
-  font-size: 1rem;
-  font-weight: 500;
-  transition: all 0.2s;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  transition: var(--transition-base);
   text-align: center;
   min-width: fit-content;
 }
@@ -67,52 +67,52 @@ const buttonClasses = computed(() => [
 }
 
 .btn-primary {
-  background-color: #1976d2;
-  color: white;
+  background-color: var(--color-primary-500);
+  color: var(--color-white);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background-color: #1565c0;
+  background-color: var(--color-primary-600);
 }
 
 .btn-secondary {
-  background-color: #f5f5f5;
-  color: #333;
-  border: 1px solid #ddd;
+  background-color: var(--color-secondary-100);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border-default);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background-color: #e0e0e0;
+  background-color: var(--color-secondary-200);
 }
 
 .btn-danger {
-  background-color: #d32f2f;
-  color: white;
+  background-color: var(--color-error-500);
+  color: var(--color-white);
 }
 
 .btn-danger:hover:not(:disabled) {
-  background-color: #c62828;
+  background-color: var(--color-error-600);
 }
 
 .btn-outline-primary {
   background-color: transparent;
-  color: #1976d2;
-  border: 1px solid #1976d2;
+  color: var(--color-primary-500);
+  border: 1px solid var(--color-primary-500);
 }
 
 .btn-outline-primary:hover:not(:disabled) {
-  background-color: #1976d2;
-  color: white;
+  background-color: var(--color-primary-500);
+  color: var(--color-white);
 }
 
 .btn-sm {
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--font-size-sm);
 }
 
 .btn-lg {
-  padding: 1rem 2rem;
-  font-size: 1.125rem;
+  padding: var(--space-4) var(--space-8);
+  font-size: var(--font-size-lg);
 }
 
 .btn-block {
@@ -124,6 +124,6 @@ const buttonClasses = computed(() => [
 }
 
 .loading-spinner {
-  margin-right: 0.5rem;
+  margin-right: var(--space-2);
 }
 </style> 

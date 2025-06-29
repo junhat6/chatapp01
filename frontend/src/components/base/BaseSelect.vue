@@ -109,62 +109,63 @@ const handleFocus = (event: FocusEvent) => {
 
 <style scoped>
 .form-group {
-  margin-bottom: 1rem;
+  margin-bottom: var(--space-4);
 }
 
 .form-label {
   display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: #333;
+  margin-bottom: var(--space-2);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
 }
 
 .required-indicator {
-  color: #d32f2f;
-  margin-left: 0.25rem;
+  color: var(--color-error-500);
+  margin-left: var(--space-1);
 }
 
 .form-select {
   width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
-  background-color: white;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-base);
+  font-size: var(--font-size-base);
+  background-color: var(--color-white);
+  color: var(--color-text-primary);
   cursor: pointer;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: var(--transition-base);
 }
 
 .form-select:focus {
   outline: none;
-  border-color: #1976d2;
-  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
 }
 
 .form-select-error {
-  border-color: #d32f2f;
+  border-color: var(--color-error-500);
 }
 
 .form-select-error:focus {
-  border-color: #d32f2f;
-  box-shadow: 0 0 0 2px rgba(211, 47, 47, 0.2);
+  border-color: var(--color-error-500);
+  box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1);
 }
 
 .form-select-disabled {
-  background-color: #f5f5f5;
-  color: #666;
+  background-color: var(--color-secondary-50);
+  color: var(--color-text-disabled);
   cursor: not-allowed;
 }
 
 .error-message {
-  color: #d32f2f;
-  font-size: 0.875rem;
-  margin-top: 0.25rem;
+  color: var(--color-error-500);
+  font-size: var(--font-size-sm);
+  margin-top: var(--space-1);
 }
 
 .hint-message {
-  color: #666;
-  font-size: 0.875rem;
-  margin-top: 0.25rem;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  margin-top: var(--space-1);
 }
 </style> 

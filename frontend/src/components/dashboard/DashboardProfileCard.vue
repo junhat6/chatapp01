@@ -9,12 +9,12 @@
       <BaseAlert
         v-if="isProfileComplete"
         type="success"
-        message="✅ プロフィール設定完了"
+        message="プロフィール設定完了"
       />
       <BaseAlert
         v-else-if="hasProfile"
         type="warning"
-        title="⚠️ プロフィール未完了"
+        title="プロフィール未完了"
       >
         <div class="missing-info">
           必須項目: {{ missingFields.join(', ') }}
@@ -31,7 +31,7 @@
       <BaseAlert
         v-else
         type="error"
-        title="❌ プロフィール未作成"
+        title="プロフィール未作成"
       >
         <BaseButton
           variant="outline-primary"
@@ -70,15 +70,17 @@
           <strong>年間パス:</strong> 
           <span class="annual-pass">保有中 🎫</span>
         </div>
-        <div class="profile-item" v-if="profile.favoriteAttractions.length > 0">
-          <strong>好きなアトラクション:</strong>
-          <div class="mini-tags">
-            <span v-for="attraction in profile.favoriteAttractions.slice(0, 3)" :key="attraction" class="mini-tag">
-              {{ attraction }}
-            </span>
-            <span v-if="profile.favoriteAttractions.length > 3" class="more-count">
-              +{{ profile.favoriteAttractions.length - 3 }}
-            </span>
+        <div class="profile-item attractions-item" v-if="profile.favoriteAttractions.length > 0">
+          <div class="attractions-content">
+            <strong>好きなアトラクション:</strong>
+            <div class="mini-tags">
+              <span v-for="attraction in profile.favoriteAttractions.slice(0, 3)" :key="attraction" class="mini-tag">
+                {{ attraction }}
+              </span>
+              <span v-if="profile.favoriteAttractions.length > 3" class="more-count">
+                +{{ profile.favoriteAttractions.length - 3 }}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -170,12 +172,28 @@ defineEmits<{
   font-weight: 600;
 }
 
+.attractions-item {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.attractions-content {
+  width: 100%;
+}
+
+.attractions-content strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  min-width: auto;
+}
+
 .mini-tags {
   display: flex;
+  flex-direction: row;
   flex-wrap: wrap;
   gap: 0.25rem;
-  margin-top: 0.5rem;
-  justify-content: flex-end;
+  justify-content: flex-start;
+  align-items: center;
 }
 
 .mini-tag {

@@ -19,30 +19,31 @@ const props = withDefaults(defineProps<Props>(), {
 
 <style scoped>
 .dashboard-header {
-  margin-bottom: 2rem;
+  margin-bottom: var(--space-8);
   text-align: center;
 }
 
 .dashboard-title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin: 0 0 0.5rem 0;
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-2) 0;
 }
 
 .dashboard-subtitle {
-  color: #6b7280;
-  font-size: 1.1rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
   margin: 0;
 }
 
 @media (max-width: 768px) {
   .dashboard-title {
-    font-size: 1.5rem;
+    font-size: var(--font-size-2xl);
   }
   
   .dashboard-subtitle {
-    font-size: 1rem;
+    font-size: var(--font-size-base);
   }
 }
 </style> 
