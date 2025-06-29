@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { profileApi } from '@/services/profileApi'
+import { useErrorHandler } from '@/composables/useErrorHandler'
+import { useToast } from '@/composables/useToast'
 import type { 
     UserProfile, 
     CreateUserProfileRequest, 
@@ -19,6 +21,9 @@ export const useProfileStore = defineStore('profile', () => {
     const isProfileComplete = computed(() => completionStatus.value?.isComplete ?? false)
     const hasProfile = computed(() => completionStatus.value?.hasProfile ?? false)
     const missingFields = computed(() => completionStatus.value?.missingFields ?? [])
+    
+    const { handleError, handleValidationError, handleServerError } = useErrorHandler()
+    const toast = useToast()
 
     // プロフィール完了ステータス取得
     const getCompletionStatus = async (): Promise<void> => {
@@ -29,10 +34,14 @@ export const useProfileStore = defineStore('profile', () => {
                 completionStatus.value = response.data.data || null
             } else {
                 error.value = response.data.message
+                handleError(new Error(response.data.message), { 
+                    showToast: false // ステータス取得エラーは静かに処理
+                })
             }
         } catch (err: any) {
             error.value = err.response?.data?.message || 'ステータス取得に失敗しました'
             completionStatus.value = null
+            handleError(err, { showToast: false })
         }
     }
 
@@ -48,13 +57,16 @@ export const useProfileStore = defineStore('profile', () => {
                 profile.value = response.data.data
                 // 作成後にステータスを更新
                 await getCompletionStatus()
+                toast.success('プロフィールが作成されました！')
                 return true
             } else {
                 error.value = response.data.message
+                handleValidationError(new Error(response.data.message))
                 return false
             }
         } catch (err: any) {
             error.value = err.response?.data?.message || 'プロフィール作成に失敗しました'
+            handleValidationError(err)
             return false
         } finally {
             loading.value = false
@@ -75,10 +87,12 @@ export const useProfileStore = defineStore('profile', () => {
                 await getCompletionStatus()
             } else {
                 error.value = response.data.message
+                handleError(new Error(response.data.message), { showToast: false })
             }
         } catch (err: any) {
             error.value = err.response?.data?.message || 'プロフィール取得に失敗しました'
             profile.value = null
+            handleServerError(err)
         } finally {
             loading.value = false
         }
@@ -96,13 +110,16 @@ export const useProfileStore = defineStore('profile', () => {
                 profile.value = response.data.data
                 // 更新後にステータスを更新
                 await getCompletionStatus()
+                toast.success('プロフィールが更新されました！')
                 return true
             } else {
                 error.value = response.data.message
+                handleValidationError(new Error(response.data.message))
                 return false
             }
         } catch (err: any) {
             error.value = err.response?.data?.message || 'プロフィール更新に失敗しました'
+            handleValidationError(err)
             return false
         } finally {
             loading.value = false
@@ -119,13 +136,16 @@ export const useProfileStore = defineStore('profile', () => {
             
             if (response.data.success) {
                 profile.value = null
+                toast.success('プロフィールが削除されました')
                 return true
             } else {
                 error.value = response.data.message
+                handleValidationError(new Error(response.data.message))
                 return false
             }
         } catch (err: any) {
             error.value = err.response?.data?.message || 'プロフィール削除に失敗しました'
+            handleValidationError(err)
             return false
         } finally {
             loading.value = false
@@ -141,13 +161,20 @@ export const useProfileStore = defineStore('profile', () => {
             const response = await profileApi.searchProfiles(searchParams)
             
             if (response.data.success && response.data.data) {
+                if (response.data.data.length === 0) {
+                    toast.info('検索条件に一致するユーザーが見つかりませんでした')
+                } else {
+                    toast.success(`${response.data.data.length}件のプロフィールが見つかりました`)
+                }
                 return response.data.data
             } else {
                 error.value = response.data.message
+                handleError(new Error(response.data.message))
                 return []
             }
         } catch (err: any) {
             error.value = err.response?.data?.message || '検索に失敗しました'
+            handleServerError(err)
             return []
         } finally {
             loading.value = false
@@ -163,13 +190,16 @@ export const useProfileStore = defineStore('profile', () => {
             const response = await profileApi.getAnnualPassHolders()
             
             if (response.data.success && response.data.data) {
+                toast.success(`${response.data.data.length}人の年間パス保有者が見つかりました`)
                 return response.data.data
             } else {
                 error.value = response.data.message
+                handleError(new Error(response.data.message))
                 return []
             }
         } catch (err: any) {
             error.value = err.response?.data?.message || '取得に失敗しました'
+            handleServerError(err)
             return []
         } finally {
             loading.value = false

@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { authApi } from '@/services/api'
+import { useErrorHandler } from '@/composables/useErrorHandler'
+import { useToast } from '@/composables/useToast'
 import type { SignInRequest, SignUpRequest, User } from '@/types'
 
 export const useAuthStore = defineStore('auth', () => {
@@ -10,6 +12,9 @@ export const useAuthStore = defineStore('auth', () => {
     const error = ref<string | null>(null)
 
     const isAuthenticated = computed(() => !!token.value)
+    
+    const { handleError, handleAuthError, handleValidationError } = useErrorHandler()
+    const toast = useToast()
 
     const login = async (credentials: SignInRequest) => {
         try {
@@ -22,13 +27,17 @@ export const useAuthStore = defineStore('auth', () => {
                 token.value = response.data.data!.token
                 user.value = response.data.data!.user
                 localStorage.setItem('token', response.data.data!.token)
+                
+                toast.success(`おかえりなさい、${response.data.data!.user.email}さん！`)
                 return true
             } else {
                 error.value = response.data.message
+                handleValidationError(new Error(response.data.message), 'ログイン情報を確認してください')
                 return false
             }
         } catch (err: any) {
             error.value = err.response?.data?.message || 'ログインに失敗しました'
+            handleAuthError(err)
             return false
         } finally {
             loading.value = false
@@ -46,13 +55,17 @@ export const useAuthStore = defineStore('auth', () => {
                 token.value = response.data.data!.token
                 user.value = response.data.data!.user
                 localStorage.setItem('token', response.data.data!.token)
+                
+                toast.success(`ようこそ、${response.data.data!.user.email}さん！`)
                 return true
             } else {
                 error.value = response.data.message
+                handleValidationError(new Error(response.data.message), '登録情報を確認してください')
                 return false
             }
         } catch (err: any) {
             error.value = err.response?.data?.message || '登録に失敗しました'
+            handleValidationError(err)
             return false
         } finally {
             loading.value = false
@@ -63,6 +76,7 @@ export const useAuthStore = defineStore('auth', () => {
         token.value = null
         user.value = null
         localStorage.removeItem('token')
+        toast.info('ログアウトしました')
     }
 
     const getCurrentUser = async () => {
@@ -71,7 +85,9 @@ export const useAuthStore = defineStore('auth', () => {
             if (response.data.success) {
                 user.value = response.data.data!
             }
-        } catch (err) {
+        } catch (err: any) {
+            // 認証エラーの場合は静かにログアウト（トーストは表示しない）
+            handleAuthError(err)
             logout()
         }
     }
