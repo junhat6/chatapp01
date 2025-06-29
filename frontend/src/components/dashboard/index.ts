@@ -1,0 +1,5 @@
+export { default as DashboardHeader } from './DashboardHeader.vue'
+export { default as DashboardProfileCard } from './DashboardProfileCard.vue'
+export { default as QuickActionsCard } from './QuickActionsCard.vue'
+export { default as AnnouncementsCard } from './AnnouncementsCard.vue'
+export { default as StatsCard } from './StatsCard.vue' 
