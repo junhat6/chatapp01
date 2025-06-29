@@ -32,15 +32,10 @@
       </div>
     </BaseAlert>
     
-    <!-- プロフィール完了ステータス表示 -->
-    <div v-else-if="completionStatus" class="completion-status">
+    <!-- プロフィール完了ステータス表示（編集モードでない場合のみ） -->
+    <div v-else-if="completionStatus && !isEditing" class="completion-status">
       <BaseAlert
-        v-if="isProfileComplete"
-        type="success"
-        message="✅ プロフィール設定完了"
-      />
-      <BaseAlert
-        v-else
+        v-if="!isProfileComplete"
         type="warning"
         :message="`⚠️ プロフィール未完了 - 必須項目: ${missingFields.join(', ')}`"
       />
