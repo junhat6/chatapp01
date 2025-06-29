@@ -37,6 +37,12 @@
     <main class="main-content">
       <router-view />
     </main>
+    
+    <!-- Toast notifications -->
+    <ToastContainer />
+    
+    <!-- Global loading overlay -->
+    <LoadingOverlay />
   </div>
 </template>
 
@@ -45,6 +51,7 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from './stores/auth'
 import { useProfileStore } from './stores/profile'
+import { ToastContainer, LoadingOverlay } from './components/base'
 
 const router = useRouter()
 const authStore = useAuthStore()

@@ -33,10 +33,23 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => response,
     (error) => {
+        // 認証エラーの場合の処理
         if (error.response?.status === 401) {
             localStorage.removeItem('token')
-            window.location.href = '/login'
+            // SPAなので履歴を残さずリダイレクト
+            window.location.replace('/login')
         }
+        
+        // ネットワークエラーの場合
+        if (!error.response) {
+            error.isNetworkError = true
+        }
+        
+        // サーバーエラーの場合
+        if (error.response?.status >= 500) {
+            error.isServerError = true
+        }
+        
         return Promise.reject(error)
     }
 )
