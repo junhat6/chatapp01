@@ -1,0 +1,5 @@
+export { default as ProfileHeader } from './ProfileHeader.vue'
+export { default as ProfileDisplay } from './ProfileDisplay.vue'
+export { default as ProfileForm } from './ProfileForm.vue'
+export { default as AttractionsSelector } from './AttractionsSelector.vue'
+export { default as HobbiesSelector } from './HobbiesSelector.vue' 
