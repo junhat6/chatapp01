@@ -21,7 +21,7 @@ export const useAuthStore = defineStore('auth', () => {
             loading.value = true
             error.value = null
 
-            const response = await authApi.signIn(credentials)
+            const response = await authApi.signin(credentials)
 
             if (response.data.success) {
                 token.value = response.data.data!.token
@@ -49,7 +49,7 @@ export const useAuthStore = defineStore('auth', () => {
             loading.value = true
             error.value = null
 
-            const response = await authApi.signUp(userData)
+            const response = await authApi.signup(userData)
 
             if (response.data.success) {
                 token.value = response.data.data!.token
@@ -81,7 +81,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     const getCurrentUser = async () => {
         try {
-            const response = await authApi.getCurrentUser()
+            const response = await authApi.me()
             if (response.data.success) {
                 user.value = response.data.data!
             }

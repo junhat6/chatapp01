@@ -27,6 +27,11 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
+    // Socket.IO依存関係追加
+    implementation("com.corundumstudio.socketio:netty-socketio:1.7.19")
+    
+    // Redis for Pub/Sub
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
     
     // JWT
     implementation("io.jsonwebtoken:jjwt-api:0.12.3")

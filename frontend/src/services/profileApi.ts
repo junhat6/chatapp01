@@ -1,4 +1,4 @@
-import axios from 'axios'
+import api from './api'
 import type { 
     UserProfile, 
     CreateUserProfileRequest, 
@@ -7,63 +7,46 @@ import type {
     ApiResponse,
     ProfileCompletionStatus
 } from '@/types'
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
-
-const api = axios.create({
-    baseURL: `${API_BASE_URL}/api/profiles`,
-    headers: {
-        'Content-Type': 'application/json',
-    },
-})
-
-// リクエストインターセプターでトークンを追加
-api.interceptors.request.use((config) => {
-    const token = localStorage.getItem('token')
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`
-    }
-    return config
-})
+import { PROFILE_PATHS } from '@/constants/apiPaths'
 
 export const profileApi = {
-    // プロフィール作成
-    createProfile: (data: CreateUserProfileRequest) => 
-        api.post<ApiResponse<UserProfile>>('/', data),
+    // プロフィールを作成または更新
+    createOrUpdateProfile: (data: CreateUserProfileRequest) =>
+        api.post<ApiResponse<UserProfile>>(PROFILE_PATHS.CREATE_OR_UPDATE, data),
 
-    // 自分のプロフィール取得
-    getMyProfile: () => 
-        api.get<ApiResponse<UserProfile | null>>('/me'),
+    // 自分のプロフィールを取得
+    getMyProfile: () =>
+        api.get<ApiResponse<UserProfile | null>>(PROFILE_PATHS.ME),
 
-    // プロフィール完了ステータス取得
-    getCompletionStatus: () => 
-        api.get<ApiResponse<ProfileCompletionStatus>>('/completion-status'),
+    // プロフィール完成度チェック
+    checkProfileCompletion: () =>
+        api.get<ApiResponse<ProfileCompletionStatus>>(PROFILE_PATHS.COMPLETION_STATUS),
 
-    // 他人のプロフィール取得
-    getUserProfile: (userId: number) => 
-        api.get<ApiResponse<UserProfile | null>>(`/${userId}`),
+    // ユーザーIDでプロフィールを取得
+    getProfileByUserId: (userId: number) =>
+        api.get<ApiResponse<UserProfile | null>>(PROFILE_PATHS.BY_ID(userId.toString())),
 
-    // プロフィール更新
-    updateProfile: (data: UpdateUserProfileRequest) => 
-        api.put<ApiResponse<UserProfile>>('/', data),
+    // プロフィールを更新
+    updateProfile: (data: UpdateUserProfileRequest) =>
+        api.put<ApiResponse<UserProfile>>(PROFILE_PATHS.UPDATE, data),
 
-    // プロフィール削除
-    deleteProfile: () => 
-        api.delete<ApiResponse<boolean>>('/'),
+    // プロフィールを削除
+    deleteProfile: () =>
+        api.delete<ApiResponse<boolean>>(PROFILE_PATHS.DELETE),
 
-    // プロフィール検索
-    searchProfiles: (params: UserProfileSearchRequest) => 
-        api.get<ApiResponse<UserProfile[]>>('/search', { params }),
+    // プロフィールを検索
+    searchProfiles: (params: UserProfileSearchRequest) =>
+        api.get<ApiResponse<UserProfile[]>>(PROFILE_PATHS.SEARCH, { params }),
 
-    // 年間パス保有者一覧
-    getAnnualPassHolders: () => 
-        api.get<ApiResponse<UserProfile[]>>('/annual-pass-holders'),
+    // 年パス保持者一覧を取得
+    getAnnualPassHolders: () =>
+        api.get<ApiResponse<UserProfile[]>>(PROFILE_PATHS.ANNUAL_PASS_HOLDERS),
 
-    // 特定アトラクション好きな人一覧
-    getUsersByFavoriteAttraction: (attraction: string) => 
-        api.get<ApiResponse<UserProfile[]>>(`/attraction/${attraction}`),
+    // アトラクション別プロフィール一覧を取得
+    getProfilesByAttraction: (attraction: string) =>
+        api.get<ApiResponse<UserProfile[]>>(PROFILE_PATHS.BY_ATTRACTION(attraction)),
 
-    // アトラクション一覧取得
-    getAvailableAttractions: () => 
-        api.get<ApiResponse<string[]>>('/attractions'),
+    // 利用可能なアトラクション一覧を取得
+    getAvailableAttractions: () =>
+        api.get<ApiResponse<string[]>>(PROFILE_PATHS.ATTRACTIONS),
 } 

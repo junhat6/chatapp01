@@ -7,6 +7,11 @@ import RegisterView from '@/views/RegisterView.vue'
 import DashboardView from '@/views/DashboardView.vue'
 import ProfileView from '@/views/ProfileView.vue'
 import ProfileSearchView from '@/views/ProfileSearchView.vue'
+import MatchingListView from '@/views/MatchingListView.vue'
+import MatchingCreateView from '@/views/MatchingCreateView.vue'
+import MatchingDetailView from '@/views/MatchingDetailView.vue'
+import MatchingRoomView from '@/views/MatchingRoomView.vue'
+import ChatRoomView from '@/views/ChatRoomView.vue'
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -48,6 +53,60 @@ const router = createRouter({
                 requiresAuth: true,
                 requiresCompleteProfile: true 
             }
+        },
+        {
+            path: '/matching',
+            name: 'matching',
+            component: MatchingListView,
+            meta: { 
+                requiresAuth: true,
+                requiresCompleteProfile: true 
+            }
+        },
+        {
+            path: '/matching/create',
+            name: 'matching-create',
+            component: MatchingCreateView,
+            meta: { 
+                requiresAuth: true,
+                requiresCompleteProfile: true 
+            }
+        },
+        {
+            path: '/matching/:id',
+            name: 'matching-detail',
+            component: MatchingDetailView,
+            meta: { 
+                requiresAuth: true,
+                requiresCompleteProfile: true 
+            },
+            props: route => ({ 
+                requestId: parseInt(route.params.id as string) 
+            })
+        },
+        {
+            path: '/matching/:id/room',
+            name: 'matching-room',
+            component: MatchingRoomView,
+            meta: { 
+                requiresAuth: true,
+                requiresCompleteProfile: true 
+            },
+            props: route => ({ 
+                requestId: parseInt(route.params.id as string) 
+            })
+        },
+        {
+            path: '/chat/:requestId',
+            name: 'chat-room',
+            component: ChatRoomView,
+            meta: { 
+                requiresAuth: true,
+                requiresCompleteProfile: true 
+            },
+            props: route => ({ 
+                requestId: parseInt(route.params.requestId as string) 
+            })
         }
     ]
 })

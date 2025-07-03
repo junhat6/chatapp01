@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  docs-viewer:
+    build: .
+    ports:
+      - "8100:8100"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    container_name: matching-docs-viewer 
