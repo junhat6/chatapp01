@@ -6,9 +6,10 @@ import type {
     AuthResponse,
     User
 } from '@/types'
+import { API_BASE, AUTH_PATHS, HEALTH_PATHS } from '@/constants/apiPaths'
 
 const api = axios.create({
-    baseURL: '/api',
+    baseURL: '', // baseURLを空にしてフルパスを使用
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json'
@@ -55,18 +56,17 @@ api.interceptors.response.use(
 )
 
 export const authApi = {
-    signIn: (credentials: SignInRequest) =>
-        api.post<ApiResponse<AuthResponse>>('/auth/signin', credentials),
+    signin: (credentials: SignInRequest) =>
+        api.post<ApiResponse<AuthResponse>>(AUTH_PATHS.SIGNIN, credentials),
 
-    signUp: (userData: SignUpRequest) =>
-        api.post<ApiResponse<AuthResponse>>('/auth/signup', userData),
+    signup: (userData: SignUpRequest) =>
+        api.post<ApiResponse<AuthResponse>>(AUTH_PATHS.SIGNUP, userData),
 
-    getCurrentUser: () =>
-        api.get<ApiResponse<User>>('/auth/me')
+    me: () => api.get<ApiResponse<User>>(AUTH_PATHS.ME)
 }
 
 export const healthApi = {
-    check: () => api.get<{ status: string; service: string; timestamp: string }>('/health')
+    check: () => api.get<{ status: string; service: string; timestamp: string }>(HEALTH_PATHS.CHECK)
 }
 
 export default api 

@@ -18,7 +18,7 @@
     <BaseAlert
       v-if="isIncompleteAccess"
       type="warning"
-      title="⚠️ プロフィール設定が未完了です"
+      title="プロフィール設定が未完了です"
     >
       <p>チャット機能や仲間探し機能を利用するには、プロフィールの設定を完了してください。</p>
       <div v-if="missingFieldsFromQuery.length > 0" class="missing-fields">
@@ -37,7 +37,7 @@
       <BaseAlert
         v-if="!isProfileComplete"
         type="warning"
-        :message="`⚠️ プロフィール未完了 - 必須項目: ${missingFields.join(', ')}`"
+        :message="`プロフィール未完了 - 必須項目: ${missingFields.join(', ')}`"
       />
     </div>
   </div>

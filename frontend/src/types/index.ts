@@ -81,4 +81,39 @@ export interface ProfileCompletionStatus {
     isComplete: boolean
     hasProfile: boolean
     missingFields: string[]
-} 
+}
+
+export interface JoinRoomMessage {
+  userId: number
+  userDisplayName: string
+  requestId: number
+}
+export interface LeaveRoomMessage {
+  userId: number
+  userDisplayName: string
+  requestId: number
+}
+export interface ConfirmRoomMessage {
+  requestId: number
+  confirmedBy: number
+}
+export interface DisbandRoomMessage {
+  requestId: number
+  disbandedBy: number
+}
+export interface ParticipantInfo {
+  userId: number
+  displayName: string
+  isHost: boolean
+  joinedAt: string
+}
+export interface RoomStateUpdateMessage {
+  requestId: number
+  participants: ParticipantInfo[]
+  currentCount: number
+  maxParticipants: number
+  isConfirmed: boolean
+}
+
+// マッチング機能の型をエクスポート
+export * from './matching' 

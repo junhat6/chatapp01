@@ -20,19 +20,6 @@
           </div>
           
           <div class="form-group">
-            <label for="displayName" class="form-label">表示名</label>
-            <input
-              id="displayName"
-              v-model="form.displayName"
-              type="text"
-              class="form-input"
-              placeholder="表示名を入力"
-              required
-              :disabled="loading"
-            />
-          </div>
-          
-          <div class="form-group">
             <label for="password" class="form-label">パスワード</label>
             <input
               id="password"
@@ -43,18 +30,6 @@
               required
               :disabled="loading"
             />
-          </div>
-          
-          <div class="form-group">
-            <label for="bio" class="form-label">自己紹介（任意）</label>
-            <textarea
-              id="bio"
-              v-model="form.bio"
-              class="form-input"
-              placeholder="自己紹介を入力してください"
-              rows="3"
-              :disabled="loading"
-            ></textarea>
           </div>
           
           <div v-if="errors.length > 0" class="error-messages">
@@ -96,9 +71,7 @@ const authStore = useAuthStore()
 
 const form = ref<SignUpRequest>({
   email: '',
-  password: '',
-  displayName: '',
-  bio: ''
+  password: ''
 })
 
 const loading = ref(false)
@@ -109,10 +82,6 @@ const validateForm = (): boolean => {
   
   if (!form.value.email) {
     errors.value.push('メールアドレスは必須です')
-  }
-  
-  if (!form.value.displayName) {
-    errors.value.push('表示名は必須です')
   }
   
   if (!form.value.password) {

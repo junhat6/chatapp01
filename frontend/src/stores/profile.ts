@@ -28,7 +28,7 @@ export const useProfileStore = defineStore('profile', () => {
     // プロフィール完了ステータス取得
     const getCompletionStatus = async (): Promise<void> => {
         try {
-            const response = await profileApi.getCompletionStatus()
+            const response = await profileApi.checkProfileCompletion()
             
             if (response.data.success) {
                 completionStatus.value = response.data.data || null
@@ -51,7 +51,7 @@ export const useProfileStore = defineStore('profile', () => {
             loading.value = true
             error.value = null
 
-            const response = await profileApi.createProfile(data)
+            const response = await profileApi.createOrUpdateProfile(data)
             
             if (response.data.success && response.data.data) {
                 profile.value = response.data.data

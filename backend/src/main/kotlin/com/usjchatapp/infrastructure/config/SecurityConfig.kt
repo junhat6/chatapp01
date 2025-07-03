@@ -1,5 +1,6 @@
 package com.usjchatapp.infrastructure.config
 
+import com.usjchatapp.common.constants.ApiPaths
 import com.usjchatapp.infrastructure.security.JwtAuthenticationFilter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -23,31 +24,35 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 @Configuration
 @EnableWebSecurity
 class SecurityConfig(
-    @Lazy private val userDetailsService: UserDetailsService,
-    @Lazy private val jwtAuthenticationFilter: JwtAuthenticationFilter
+        @Lazy private val userDetailsService: UserDetailsService,
+        @Lazy private val jwtAuthenticationFilter: JwtAuthenticationFilter
 ) {
 
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         return http
-            .csrf { it.disable() }
-            .cors { it.configurationSource(corsConfigurationSource()) }
-            .authorizeHttpRequests { authz ->
-                authz
-                    .requestMatchers(
-                        "/api/auth/**",
-                        "/api/health",
-                        "/ws/**",
-                        "/error"
-                    ).permitAll()
-                    .anyRequest().authenticated()
-            }
-            .sessionManagement { session ->
-                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            }
-            .authenticationProvider(authenticationProvider())
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
-            .build()
+                .csrf { it.disable() }
+                .cors { it.configurationSource(corsConfigurationSource()) }
+                .authorizeHttpRequests { authz ->
+                    authz.requestMatchers(
+                                    "${ApiPaths.Auth.BASE}/**",
+                                    ApiPaths.Health.BASE,
+                                    ApiPaths.WebSocket.ENDPOINT + "/**",
+                                    "/error"
+                            )
+                            .permitAll()
+                            .anyRequest()
+                            .authenticated()
+                }
+                .sessionManagement { session ->
+                    session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                }
+                .authenticationProvider(authenticationProvider())
+                .addFilterBefore(
+                        jwtAuthenticationFilter,
+                        UsernamePasswordAuthenticationFilter::class.java
+                )
+                .build()
     }
 
     @Bean
@@ -80,4 +85,4 @@ class SecurityConfig(
     fun authenticationManager(config: AuthenticationConfiguration): AuthenticationManager {
         return config.authenticationManager
     }
-} 
+}
