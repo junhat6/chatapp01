@@ -44,7 +44,8 @@ CREATE TABLE IF NOT EXISTS matching_requests (
     description TEXT,
     status VARCHAR(20) NOT NULL DEFAULT 'OPEN',
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMP
 );
 -- Matching Applications テーブル（応募情報）
 CREATE TABLE IF NOT EXISTS matching_applications (

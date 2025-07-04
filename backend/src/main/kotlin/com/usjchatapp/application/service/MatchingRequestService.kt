@@ -47,10 +47,11 @@ class MatchingRequestService(
         val requests =
                 when {
                     searchRequest.attraction != null -> {
-                        matchingRequestRepository.findByAttractionAndStatusInOrderByCreatedAtDesc(
-                                searchRequest.attraction,
-                                activeStatuses
-                        )
+                        matchingRequestRepository
+                                .findByAttractionAndStatusInAndDeletedAtIsNullOrderByCreatedAtDesc(
+                                        searchRequest.attraction,
+                                        activeStatuses
+                                )
                     }
                     searchRequest.dateFrom != null &&
                             searchRequest.dateTo != null &&
@@ -63,7 +64,10 @@ class MatchingRequestService(
                         )
                     }
                     else -> {
-                        matchingRequestRepository.findByStatusInOrderByCreatedAtDesc(activeStatuses)
+                        matchingRequestRepository
+                                .findByStatusInAndDeletedAtIsNullOrderByCreatedAtDesc(
+                                        activeStatuses
+                                )
                     }
                 }
 
@@ -81,9 +85,10 @@ class MatchingRequestService(
 
     // ユーザーの募集一覧取得
     fun getUserMatchingRequests(userId: Long): List<MatchingRequestDto> {
-        return matchingRequestRepository.findByHostUserIdOrderByCreatedAtDesc(userId).map {
-            convertToDto(it)
-        }
+        return matchingRequestRepository.findByHostUserIdAndDeletedAtIsNullOrderByCreatedAtDesc(
+                        userId
+                )
+                .map { convertToDto(it) }
     }
 
     // 募集更新
@@ -161,10 +166,11 @@ class MatchingRequestService(
         val activeStatuses = listOf(MatchingRequestStatus.OPEN, MatchingRequestStatus.WAITING)
 
         val expiredRequests =
-                matchingRequestRepository.findByPreferredDateTimeBeforeAndStatusIn(
-                        now,
-                        activeStatuses
-                )
+                matchingRequestRepository
+                        .findByPreferredDateTimeBeforeAndStatusInAndDeletedAtIsNull(
+                                now,
+                                activeStatuses
+                        )
 
         val updatedRequests =
                 expiredRequests.map { request ->
@@ -195,7 +201,8 @@ class MatchingRequestService(
                 status = request.status,
                 currentApplications = currentApplications,
                 createdAt = request.createdAt,
-                updatedAt = request.updatedAt
+                updatedAt = request.updatedAt,
+                deletedAt = request.deletedAt
         )
     }
 }

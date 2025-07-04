@@ -163,7 +163,8 @@ class MatchingRoomService(
                 status = entity.status,
                 currentApplications = applications.size,
                 createdAt = entity.createdAt,
-                updatedAt = entity.updatedAt
+                updatedAt = entity.updatedAt,
+                deletedAt = entity.deletedAt
         )
     }
 
