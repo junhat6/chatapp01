@@ -97,7 +97,7 @@
       </n-alert>
 
       <!-- 空状態 -->
-      <div v-else-if="filteredRequests.length === 0" class="text-center py-12">
+      <div v-else-if="sortedFilteredRequests.length === 0" class="text-center py-12">
         <div class="text-6xl mb-4 opacity-30">🔍</div>
         <h3 class="text-xl font-semibold text-gray-700 mb-2">募集が見つかりませんでした</h3>
         <p class="text-gray-500 mb-4">条件を変更して再度検索してみてください</p>
@@ -112,47 +112,67 @@
       <!-- 募集カードグリッド -->
       <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <n-card 
-          v-for="request in filteredRequests" 
+          v-for="request in sortedFilteredRequests" 
           :key="request.id"
           class="card-simple h-full"
+          :class="getCardClasses(request)"
           :bordered="true"
         >
           <!-- カードヘッダー -->
           <template #header>
             <div class="flex items-start justify-between">
               <div class="flex-1">
-                <h3 class="text-base font-semibold text-gray-900 mb-2 line-clamp-2">
+                <h3 class="text-base font-semibold mb-2 line-clamp-2"
+                    :class="getCardTextClasses(request)">
                   {{ request.attraction }}
                 </h3>
                 
                 <div class="space-y-1">
-                  <div class="flex items-center text-sm text-gray-600">
+                  <div class="flex items-center text-sm"
+                       :class="getCardTextClasses(request, 'secondary')">
                     <span class="mr-1">👤</span>
                     {{ request.hostDisplayName }}
                   </div>
-                  <div class="flex items-center text-sm text-gray-600">
+                  <div class="flex items-center text-sm"
+                       :class="getCardTextClasses(request, 'secondary')">
                     <span class="mr-1">🕒</span>
                     {{ formatDateTime(request.preferredDateTime) }}
+                    <span v-if="isRequestExpired(request)" class="ml-2 text-xs text-red-600">
+                      ({{ getTimeUntilExpiration(request.preferredDateTime) }})
+                    </span>
                   </div>
                 </div>
               </div>
               
-              <n-tag
-                :type="getStatusTagType(request.status)"
-                :bordered="false"
-                size="small"
-                class="ml-2"
-              >
-                {{ getStatusText(request.status) }}
-              </n-tag>
+              <div class="ml-2 flex flex-col gap-1">
+                <n-tag
+                  :type="getStatusTagType(request.status, request)"
+                  :bordered="false"
+                  size="small"
+                >
+                  {{ getStatusText(request.status, request) }}
+                </n-tag>
+                
+                <!-- 期限切れバッジ -->
+                <n-tag
+                  v-if="isRequestExpired(request)"
+                  type="error"
+                  :bordered="false"
+                  size="small"
+                  class="bg-red-100 text-red-800"
+                >
+                  期限切れ
+                </n-tag>
+              </div>
             </div>
           </template>
 
           <!-- 参加者状況 -->
           <div class="mb-4">
             <div class="flex items-center justify-between mb-2">
-              <span class="text-sm text-gray-600">参加者</span>
-              <span class="text-sm font-medium text-primary-600">
+              <span class="text-sm" :class="getCardTextClasses(request, 'secondary')">参加者</span>
+              <span class="text-sm font-medium text-primary-600"
+                    :class="isRequestExpired(request) ? 'opacity-60' : ''">
                 {{ request.currentApplications }}/{{ request.maxParticipants }}人
               </span>
             </div>
@@ -160,7 +180,7 @@
             <n-progress
               type="line"
               :percentage="(request.currentApplications / request.maxParticipants) * 100"
-              :color="getProgressColor(request.currentApplications, request.maxParticipants)"
+              :color="getProgressColor(request.currentApplications, request.maxParticipants, request)"
               :height="4"
               :border-radius="2"
               :fill-border-radius="2"
@@ -169,7 +189,7 @@
 
           <!-- 説明 -->
           <div v-if="request.description" class="mb-4">
-            <p class="text-sm text-gray-700 line-clamp-2">
+            <p class="text-sm line-clamp-2" :class="getCardTextClasses(request, 'secondary')">
               {{ request.description }}
             </p>
           </div>
@@ -183,6 +203,7 @@
                 :type="getRoomButtonType(request)"
                 class="flex-1"
                 :class="getRoomButtonClass(request)"
+                :disabled="isRequestExpired(request) && !hasUserParticipated(request)"
               >
                 <template #icon>
                   <div :class="getRoomButtonIcon(request)"></div>
@@ -196,11 +217,12 @@
                 @click="showApplicationModal(request)"
                 size="small"
                 class="btn-primary flex-1"
+                :disabled="isRequestExpired(request)"
               >
                 <template #icon>
                   <div class="i-carbon-user-follow"></div>
                 </template>
-                応募する
+                {{ isRequestExpired(request) ? '期限切れ' : '応募する' }}
               </n-button>
               
               <n-button
@@ -213,12 +235,12 @@
               </n-button>
               
               <n-button
-                v-else-if="!canApplyToRequest(request)"
+                v-else-if="!canApplyToRequest(request) || isRequestExpired(request)"
                 disabled
                 size="small"
                 class="flex-1"
               >
-                募集終了
+                {{ isRequestExpired(request) ? '期限切れ' : '募集終了' }}
               </n-button>
             </n-space>
           </template>
@@ -243,6 +265,12 @@ import { useRouter } from 'vue-router'
 import { useMatchingStore } from '@/stores/matching'
 import type { MatchingRequestDto, MatchingRequestWithActions } from '@/types'
 import ApplicationModal from '@/components/matching/ApplicationModal.vue'
+import { 
+  isExpired, 
+  getExpirationStatus, 
+  getTimeUntilExpiration, 
+  formatDateTime as utilFormatDateTime 
+} from '@/utils/dateUtils'
 
 const router = useRouter()
 const matchingStore = useMatchingStore()
@@ -268,7 +296,47 @@ const hasExistingApplication = computed(() => {
   )
 })
 
-// Filter options
+// 期限切れを考慮したソート済み募集一覧
+const sortedFilteredRequests = computed(() => {
+  const requests = [...filteredRequests.value]
+  
+  return requests.sort((a, b) => {
+    const aExpired = isExpired(a.preferredDateTime)
+    const bExpired = isExpired(b.preferredDateTime)
+    
+    // 期限切れでない募集を上に表示
+    if (aExpired !== bExpired) {
+      return aExpired ? 1 : -1
+    }
+    
+    // 同じ期限切れ状態の場合は日時順
+    return new Date(a.preferredDateTime).getTime() - new Date(b.preferredDateTime).getTime()
+  })
+})
+
+// 期限切れ判定と視覚的スタイリング
+const isRequestExpired = (request: MatchingRequestDto): boolean => {
+  return isExpired(request.preferredDateTime)
+}
+
+const getCardClasses = (request: MatchingRequestDto): string => {
+  if (isRequestExpired(request)) {
+    return 'opacity-70 bg-gray-50 border-gray-200'
+  }
+  return ''
+}
+
+const getCardTextClasses = (request: MatchingRequestDto, type: 'primary' | 'secondary' = 'primary'): string => {
+  const baseClasses = type === 'primary' ? 'text-gray-900' : 'text-gray-600'
+  
+  if (isRequestExpired(request)) {
+    return type === 'primary' ? 'text-gray-500' : 'text-gray-400'
+  }
+  
+  return baseClasses
+}
+
+// Filter options  
 const attractionFilterOptions = [
   {
     type: 'group',
@@ -344,7 +412,10 @@ const getAttractionEmoji = (attraction: string): string => {
   return emojiMap[attraction] || '🎢'
 }
 
-const getStatusTagType = (status: string) => {
+const getStatusTagType = (status: string, request: MatchingRequestDto) => {
+  if (isRequestExpired(request)) {
+    return 'error'
+  }
   switch (status) {
     case 'OPEN': return 'success'
     case 'WAITING': return 'info'
@@ -355,7 +426,10 @@ const getStatusTagType = (status: string) => {
   }
 }
 
-const getStatusText = (status: string): string => {
+const getStatusText = (status: string, request: MatchingRequestDto): string => {
+  if (isRequestExpired(request)) {
+    return '期限切れ'
+  }
   switch (status) {
     case 'OPEN': return '募集中'
     case 'WAITING': return '待機中'
@@ -366,8 +440,12 @@ const getStatusText = (status: string): string => {
   }
 }
 
-const getProgressColor = (current: number, max: number): string => {
+const getProgressColor = (current: number, max: number, request: MatchingRequestDto): string => {
   const percentage = (current / max) * 100
+  // 期限切れの場合は色を薄くする
+  if (isRequestExpired(request)) {
+    return '#94a3b8' // グレー色
+  }
   if (percentage >= 100) return '#22c55e' // adventure green
   if (percentage >= 75) return '#facc15' // sunshine yellow
   if (percentage >= 50) return '#f97316' // orange
@@ -390,7 +468,7 @@ const isDateDisabled = (ts: number) => {
 }
 
 const canApplyToRequest = (request: MatchingRequestDto): boolean => {
-  return request.status === 'OPEN' && request.currentApplications < request.maxParticipants
+  return request.status === 'OPEN' && request.currentApplications < request.maxParticipants && !isRequestExpired(request)
 }
 
 // Room button functions
