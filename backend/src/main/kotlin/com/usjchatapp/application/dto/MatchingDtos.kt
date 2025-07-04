@@ -16,7 +16,8 @@ data class MatchingRequestDto(
         val status: MatchingRequestStatus,
         val currentApplications: Int,
         val createdAt: LocalDateTime,
-        val updatedAt: LocalDateTime
+        val updatedAt: LocalDateTime,
+        val deletedAt: LocalDateTime? = null
 )
 
 data class CreateMatchingRequestRequest(

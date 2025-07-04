@@ -18,13 +18,20 @@ data class MatchingRequest(
         val createdAt: LocalDateTime = LocalDateTime.now(),
         @Column(name = "updated_at", nullable = false)
         val updatedAt: LocalDateTime = LocalDateTime.now(),
+        @Column(name = "deleted_at", nullable = true) val deletedAt: LocalDateTime? = null,
 
         // リレーション
         @ManyToOne(fetch = FetchType.LAZY)
         @JoinColumn(name = "host_user_id", insertable = false, updatable = false)
         val hostUser: User? = null,
 // 関連データは必要に応じてサービス層で取得
-)
+) {
+    // 論理削除されているかどうかを判定
+    fun isDeleted(): Boolean = deletedAt != null
+
+    // 論理削除されていないかどうかを判定
+    fun isActive(): Boolean = deletedAt == null
+}
 
 enum class MatchingRequestStatus {
     OPEN, // 募集中
