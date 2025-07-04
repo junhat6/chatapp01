@@ -23,6 +23,9 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 
 @Configuration
 @EnableWebSecurity
+@org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity(
+        prePostEnabled = true
+)
 class SecurityConfig(
         @Lazy private val userDetailsService: UserDetailsService,
         @Lazy private val jwtAuthenticationFilter: JwtAuthenticationFilter
