@@ -51,76 +51,58 @@ chatapp01/
     └── vite.config.ts         # Vite 設定
 ```
 
-## 🚀 セットアップ & 実行手順
+## 🚀 セットアップ & 実行手順（PostgreSQL で起動）
 
 ### 前提条件
 - Java 17以上
 - Node.js 18以上 & npm/yarn
-- Docker（PostgreSQL使用時のみ）
+- Docker と Docker Compose（必須）
 
-### 🎯 簡単起動（推奨）
-
+### 1. インフラ起動（PostgreSQL + Redis）
 ```bash
 # プロジェクトルートで実行
-./start-dev.sh
+docker-compose up -d
 ```
 
-起動時に以下のオプションを選択できます：
-1. **PostgreSQL（Docker）** - 本番環境と同じデータベース（Dockerが必要）
-2. **H2インメモリ** - セットアップ不要、即座に起動
+- PostgreSQL は `localhost:5432` に公開され、初期データベース/ユーザーは `usjchatapp`、パスワードは `password` です（`docker-compose.yml` に定義済み）。
+- Redis は `localhost:6379` に公開されます。
 
-### 📊 データベースオプション詳細
-
-#### オプション1: PostgreSQL（Docker）- 本番相当
+### 2. バックエンド起動
 ```bash
-# PostgreSQLをDockerで起動
-docker-compose up -d postgres
-
-# バックエンド起動
-cd backend && ./gradlew bootRun
+cd backend
+./gradlew bootRun
 ```
-
-#### オプション2: H2インメモリ - 開発専用
-```bash
-# H2データベースでバックエンド起動（セットアップ不要）
-cd backend && ./gradlew bootRun --args='--spring.profiles.active=dev'
-```
-
-**H2データベースコンソール**: `http://localhost:8080/h2-console`
-- JDBC URL: `jdbc:h2:mem:testdb`
-- ユーザー名: `sa`
-- パスワード: （空欄）
-
-#### 手動PostgreSQL設定（従来方法）
-
-PostgreSQLデータベースとユーザーを作成：
-
-```sql
--- PostgreSQL に接続して以下を実行
-CREATE DATABASE usjchatapp;
-CREATE USER usjchatapp WITH PASSWORD 'password';
-GRANT ALL PRIVILEGES ON DATABASE usjchatapp TO usjchatapp;
-```
-
-バックエンドは `http://localhost:8080` で起動します。
+- バックエンドは `http://localhost:8080` で起動します。
+- `backend/src/main/resources/application.yml` はデフォルトでローカルの PostgreSQL に接続する設定になっています（環境変数の設定は不要）。
 
 ### 3. フロントエンド起動
-
 ```bash
 cd frontend
 
 # 依存関係をインストール
-npm install
-# または
-yarn install
+npm ci || npm install
 
 # 開発サーバーを起動
 npm run dev
+```
+- フロントエンドは `http://localhost:3000` で起動します。
+
+## 📚 ランブック（操作手順書）
+- 総則・目次: `docs/RUNBOOK.md`
+- ローカル開発の起動: `docs/runbooks/local-dev.md`
+- Docker でインフラ起動: `docs/runbooks/docker.md`
+- API 仕様同期チェック: `docs/runbooks/api-sync.md`
+
+### ランブック検証（ローカル）
+```bash
+node scripts/validate-runbooks.mjs
 # または
-yarn dev
+bash scripts/validate-runbooks.sh
 ```
 
-フロントエンドは `http://localhost:3000` で起動します。
+### ランブック検証（CI）
+- GitHub Actions: `.github/workflows/runbook-validate.yml`
+- 対象変更: `docs/**/*.md` および検証スクリプト
 
 ## 🌐 API エンドポイント
 
@@ -184,12 +166,13 @@ spring:
 ## 🐛 トラブルシューティング
 
 ### データベース接続エラー
-- PostgreSQLが起動していることを確認
+- `docker-compose up -d` が完了していることを確認
+- コンテナのヘルスチェックが `healthy` になっていることを確認
 - データベース名、ユーザー名、パスワードが正しいことを確認
 
 ### フロントエンド起動エラー
 - Node.js のバージョンが18以上であることを確認
-- `npm install` または `yarn install` を実行
+- `npm ci` または `npm install` を実行
 
 ### CORS エラー
 - バックエンドとフロントエンドが異なるポートで動作していることを確認
